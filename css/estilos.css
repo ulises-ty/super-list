@@ -19,3 +19,8 @@
     align-items: center;
     padding: 20px;
 }
+
+img {
+    width: 100%;
+    max-width: 800px;
+}

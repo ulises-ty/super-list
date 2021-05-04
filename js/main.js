@@ -135,19 +135,24 @@ function configurarListeners() {
     document.getElementById('btn-borrar-productos').addEventListener('click', e => {
         console.log(e)
 
-        if(confirm('Quiere borrar todo?')) {
+        if(listaProductos.length) {
+            let dialog = document.querySelector('dialog');
+            dialog.showModal();
+        }
+
+        /* if(confirm('Quiere borrar todo?')) {
             listaProductos = []
             renderLista()
-        } 
+        }  */
     })
 }
 
 function registrarServiceWorker() {
     if('serviceWorker' in navigator) {
         window.addEventListener('load', e => {
-            this.navigator.serviveWorker.register('./sw.js')
+            this.navigator.serviceWorker.register('./sw.js')
             .then( reg => {
-                console.log('El servive worker se registro correctamente', reg)
+                //console.log('El servive worker se registro correctamente', reg)
             })
             .catch( err => {
                 console.log('Error al registrar el service worker', err)
@@ -158,11 +163,83 @@ function registrarServiceWorker() {
     }
 }
 
+function iniDialog() {
+    let dialog = document.querySelector('dialog');
+    if (! dialog.showModal) {
+      dialogPolyfill.registerDialog(dialog);
+    }
+    dialog.querySelector('.aceptar').addEventListener('click', e => {
+        listaProductos = []
+        renderLista()
+        dialog.close()
+    })
+    dialog.querySelector('.cancelar').addEventListener('click', function() {
+      dialog.close();
+    });
+}
+
+/*----------------------------------------------------- */
+/*                    PROMESAS TEST                     */
+/*----------------------------------------------------- */
+function delayPromise(ms) {
+    return new Promise((resolve, reject) => {
+        if(typeof ms == 'number') {
+            setTimeout(() => resolve('Ok retardo'), ms)
+        } else {
+            let error = {
+                mensaje: 'Error de parametro ms',
+                ms: ms,
+                typeof: typeof ms
+            }
+            reject(error)
+        }
+    })
+}
+
+function testPromesas() {
+    console.warn('tIni', new Date().toLocaleString())
+    delayPromise(3000)
+    .then( respuesta => {
+        console.log(respuesta)
+        console.warn('tFin', new Date().toLocaleString())
+    })
+    .catch( err => {
+        console.log(err)
+    })
+}
+
+/*----------------------------------------------------- */
+/*                      FETCH TEST                      */
+/*----------------------------------------------------- */
+
+function testFetch() {
+    fetch('https://jsonplaceholder.typicode.com/todos/1')
+        .then( response => response.json() )
+        .then( json => console.log('OK FETCH THEN CATCH', json))
+        .catch( error => console.error('ERROR FETCH THEN CATCH:::::', error))
+}
+
+async function testFetchAsyncAwait() {
+    try {
+        let response = await fetch('https://jsonplaceholder.typicode.com/todos/1')
+        let json = await response.json() 
+        console.log('OK FETCH ASYNC AWAIT', json)
+    } catch {
+        console.error('ERROR FETCH ASYNC AWAIT:::::', error)
+    }
+}
+
 function start() {
     console.log('Super Lista')
-
+    
     registrarServiceWorker()
     configurarListeners()
+    iniDialog()
+
+    //testPromesas()
+    testFetch()
+    testFetchAsyncAwait()
+
     renderLista()
 }
 
