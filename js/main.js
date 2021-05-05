@@ -1,7 +1,7 @@
 /*----------------------------------------------------- */
 /*                VARIABLES GLOBALES                    */
 /*----------------------------------------------------- */
-let listaProductos = [
+let listaProductos = leerListaProductos([
     {
         nombre: 'Pan', 
         cantidad: 2,
@@ -22,17 +22,97 @@ let listaProductos = [
         cantidad: 5,
         precio: 78.90
     }
-]
-
-let crearLista = true
-let ul 
+])
 
 /*----------------------------------------------------- */
 /*                FUNCIONES GLOBALES                    */
 /*----------------------------------------------------- */
-function borrarProd(index) {
-    listaProductos.splice(index, 1)
-    renderLista()
+/*----------     API REST lista productos    ---------- */
+function getURL(id) {
+    return 'https://6092b6a485ff510017213794.mockapi.io/lista/' + (id ? id:'')
+}
+
+//GET
+async function getProdWeb() {
+    try {
+        let url = getURL() + '?' + Date.now()
+        let prod = await $.ajax({url, method: 'GET'})
+
+        return prod
+    } 
+    catch(error) {
+        console.log('Error getProdWeb', error)
+        let prods = leerListaProductos(listaProductos)
+        return prods
+    }
+}
+
+//POST
+async function postProdWeb(prod) {
+    try {
+        let url = getURL()
+        let p = await $.ajax({url, method: 'POST', data: prod})
+
+        return p
+    } 
+    catch(error) {
+        console.log('Error postProdWeb', error)
+        return {}
+    }
+}
+
+//PUT
+function PUTProdWeb(prod, id) {
+    
+}
+
+//DELETE
+async function deleteProdWeb(id) {
+    try {
+        let url = getURL(id)
+        let prod = await $.ajax({url, method: 'DELETE'})
+
+        return prod
+    } 
+    catch(error) {
+        console.log('Error getProdWeb', error)
+        return {}
+    }
+}
+/*---------------    LOCAL STORAGE    ----------------- */
+function guardarListaProductos(lista) { 
+    let prods = JSON.stringify(lista)
+
+    localStorage.setItem('LISTA', prods)
+}
+
+function leerListaProductos(lista) {
+    let prods = localStorage.getItem('LISTA')
+    if(prods) {
+        try {
+            lista = JSON.parse(prods)
+        }
+        catch(error) {
+            lista = []
+            guardarListaProductos(lista)
+        }
+    }
+    return lista
+}
+/*----------------------------------------------------- */
+
+
+
+async function borrarProd(id) {
+    //listaProductos.splice(index, 1)
+    
+    try {
+        await deleteProdWeb(id)
+        renderLista()
+    }
+    catch(error) {
+        console.log('borrarProd', error)
+    }
 }
 
 function cambiarCantidadProd(index, el) {
@@ -40,6 +120,8 @@ function cambiarCantidadProd(index, el) {
     console.log('cambiarCantidadProd', index)
     listaProductos[index].cantidad = cantidad
     //console.dir(el)
+
+    guardarListaProductos(listaProductos)
 }
 
 function cambiarPrecioProd(index, el) {
@@ -48,95 +130,81 @@ function cambiarPrecioProd(index, el) {
     console.log('cambiarPrecioProd', index)
     listaProductos[index].precio = precio
     //console.dir(el)
+
+    guardarListaProductos(listaProductos)
 }
 
-function renderLista() {
-    if(crearLista) {
-        ul = document.createElement('ul')
-        ul.classList.add('demo-list-icon', 'mdl-list', 'w-100')
-    }
+async function renderLista() {
+    try {
+        //Leemos  la plantilla desde un archivo externo(plantilla-lista.hbs)
+        //----- con fetch
+        /* let datos = await fetch('plantilla-lista.hbs')
+        let plantilla = await datos.text()*/
 
-    ul.innerHTML = ''
+        //----- con ajax de jquery
+        let plantilla = await $.ajax({url: 'plantilla-lista.hbs', method: 'GET'})
+        //console.log(plantilla)
+    
+        //Compilamos la plantilla
+        let template = Handlebars.compile(plantilla);
 
-    listaProductos.forEach( (prod, index) => {
-        ul.innerHTML += 
-            `
-                <li class="mdl-list__item">
-                    <!-- Icono del Producto -->
-                    <span class="mdl-list__item-primary-content w-10">
-                        <i class="material-icons mdl-list__item-icon">shopping_cart</i>
-                    </span>
+        //Obtengo la lista de productos de la web
+        listaProductos = await getProdWeb()
+        console.log(listaProductos)
+        //Almacena la lista en el localstorage
+        guardarListaProductos(listaProductos)
     
-                    <!-- Nombre del Producto -->
-                    <span class="mdl-list__item-primary-content w-30">
-                        ${prod.nombre}
-                    </span>
+        //A traves de la funcion template (devuelta por el compilador de handlebars) inyectamos los datos en la plantilla
+        //$('#lista').html(template({ listaProductos: listaProductos }));
+        $('#lista').html(template({listaProductos}));
     
-                    <!-- Cantidad del producto -->
-                    <span class="mdl-list__item-primary-content w-20">
-                        <!-- Textfield with Floating Label -->
-                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                            <input onchange="cambiarCantidadProd(${index}, this)" class="mdl-textfield__input" type="text" id="sample-cantidad-${index}" value="${prod.cantidad}">
-                            <label class="mdl-textfield__label" for="sample-cantidad-${index}">Cantidad<label>
-                        </div>
-    
-                    </span>
-    
-                    <!-- Precio del Producto -->
-                    <span class="mdl-list__item-primary-content w-20 ml-item">
-                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                            <input onchange="cambiarPrecioProd(${index}, this)" class="mdl-textfield__input" type="text" id="sample-precio-${index}" value="${prod.precio}">
-                            <label class="mdl-textfield__label" for="sample-precio-${index}">Precio ($)<label>
-                        </div>
-                    </span>
-    
-                    <!-- Accion (Borrar Producto) -->
-                    <span class="mdl-list__item-primary-content w-20 ml-item">
-                        <!-- Colored FAB button with ripple -->
-                        <button onclick="borrarProd(${index})" class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
-                            <i class="material-icons">remove_shopping_cart</i>
-                        </button>
-                    </span>
-    
-                </li>
-            `
-    })
-
-    if(crearLista) {
-        document.getElementById('lista').append(ul)
-        crearLista = false
-    } else {
+        let ul = $('#contenedor-lista')
         componentHandler.upgradeElements(ul)
+    }
+    catch(error) {
+        console.error('Error en renderLista: ', error);
     }
 }
 
 function configurarListeners() {
     /* Ingreso de Producto */
-    document.getElementById('btn-entrada-producto').addEventListener('click', e => {
+    $('#btn-entrada-producto').click( async e => {
         console.log(e)
 
-        let input = document.getElementById('ingreso-producto')
-        let producto = input.value
+        let input = $('#ingreso-producto')
+        let producto = input.val()
 
         console.log(producto)
 
         if(producto) {
-            listaProductos.push({
+            /* listaProductos.push({
                 nombre: producto,
                 cantidad: 1,
                 precio: 0
-            })
-            renderLista()
-            input.value = null
+            }) */
+            try{
+                let prod = {
+                    nombre: producto,
+                    cantidad: 1,
+                    precio: 0
+                }
+    
+                await postProdWeb(prod)
+                renderLista()
+                input.val(null)
+            }
+            catch(error) {
+                console.log('Error: ', error)
+            }
         }
     })
 
     /* Borrar Productos */
-    document.getElementById('btn-borrar-productos').addEventListener('click', e => {
+    $('#btn-borrar-productos').click( e => {
         console.log(e)
 
         if(listaProductos.length) {
-            let dialog = document.querySelector('dialog');
+            let dialog = $('dialog')[0];
             dialog.showModal();
         }
 
@@ -164,7 +232,7 @@ function registrarServiceWorker() {
 }
 
 function iniDialog() {
-    let dialog = document.querySelector('dialog');
+    let dialog = $('dialog')[0];
     if (! dialog.showModal) {
       dialogPolyfill.registerDialog(dialog);
     }
@@ -246,4 +314,6 @@ function start() {
 /*----------------------------------------------------- */
 /*                     EJECUCION                        */
 /*----------------------------------------------------- */
-start()
+//start()
+//window.onload = start
+$(document).ready(start)
