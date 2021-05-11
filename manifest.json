@@ -1,8 +1,8 @@
 {
   "name": "Super Lista de Compras",
   "short_name": "Super Lista",
-  "theme_color": "#3f51b5",
-  "background_color": "#ff4081",
+  "theme_color": "#3F51B5",
+  "background_color": "#FF4081",
   "display": "standalone",
   "orientation": "any",
   "scope": "/",

@@ -1,45 +1,41 @@
 <ul id="contenedor-lista" class="demo-list-icon mdl-list w-100">
-
     {{#listaProductos}}
-
+    <!-- Icon List -->
     <li class="mdl-list__item">
-        <!-- Icono del Producto -->
+        <!-- ícono del producto -->
         <span class="mdl-list__item-primary-content w-10">
             <i class="material-icons mdl-list__item-icon">shopping_cart</i>
         </span>
-
-        <!-- Nombre del Producto -->
+        <!-- nombre del producto -->
         <span class="mdl-list__item-primary-content w-30">
             {{nombre}}
         </span>
-
-        <!-- Cantidad del producto -->
+        <!-- cantidad del producto -->
         <span class="mdl-list__item-primary-content w-20">
             <!-- Textfield with Floating Label -->
             <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                <input onchange="cambiarCantidadProd({{id}}, this)" class="mdl-textfield__input" type="text" id="sample-cantidad-{{@index}}" value="{{cantidad}}">
-                <label class="mdl-textfield__label" for="sample-cantidad-{{@index}}">Cantidad<label>
+                {{!-- <input onchange="cambiarCantidadProd({{id}},this)" class="mdl-textfield__input" type="text" id="sample-cantidad-{{@index}}" value="{{cantidad}}"> --}}
+                <input onchange="cambiarValorProd('cantidad',{{id}},this)" class="mdl-textfield__input" type="text" id="sample-cantidad-{{@index}}" value="{{cantidad}}">
+                <label class="mdl-textfield__label" for="sample-cantidad-{{@index}}">Cantidad</label>
             </div>
-
         </span>
-
-        <!-- Precio del Producto -->
+        <!-- precio del producto -->
         <span class="mdl-list__item-primary-content w-20 ml-item">
+            <!-- Textfield with Floating Label -->
             <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                <input onchange="cambiarPrecioProd({{id}}, this)" class="mdl-textfield__input" type="text" id="sample-precio-{{@index}}" value="{{precio}}">
-                <label class="mdl-textfield__label" for="sample-precio-{{@index}}">Precio ($)<label>
+                {{!-- <input onchange="cambiarPrecioProd({{id}},this)" class="mdl-textfield__input" type="text" id="sample-precio-{{@index}}" value="{{precio}}"> --}}
+                <input onchange="cambiarValorProd('precio',{{id}},this)" class="mdl-textfield__input" type="text" id="sample-precio-{{@index}}" value="{{precio}}">
+                <label class="mdl-textfield__label" for="sample-precio-{{@index}}">Precio($)</label>
             </div>
         </span>
-
-        <!-- Accion (Borrar Producto) -->
+        <!-- acción ( borrar producto) -->
         <span class="mdl-list__item-primary-content w-20 ml-item">
             <!-- Colored FAB button with ripple -->
-            <button onclick="borrarProd({{id}})" class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
+            <button onclick="borrarProd({{id}})"
+                class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
                 <i class="material-icons">remove_shopping_cart</i>
             </button>
         </span>
     </li>
-
     {{/listaProductos}}
-
 </ul>

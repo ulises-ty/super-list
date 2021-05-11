@@ -1,72 +1,94 @@
+const CACHE_STATIC_NAME = 'static-v04'
+const CACHE_INMUTABLE_NAME = 'inmutable-v04'
+const CACHE_DYNAMIC_NAME = 'dynamic-v04'
+
 self.addEventListener('install', e => {
-    console.log('sw instal')
+    console.log('sw install!')
+
+    //const cache = caches.open('cache-1').then( cache => {
+    const cacheStatic = caches.open(CACHE_STATIC_NAME).then( cache => {
+        //console.log(cache)
+
+        //Guardo todos los recursos estáticos de la APP SHELL: estáticos
+        //(necesarios para que nuestra AWP funcione offline)
+        return cache.addAll([
+            '/index.html',
+            'css/estilos.css',
+            '/js/main.js',
+            '/js/api.js',
+            '/plantilla-lista.hbs',
+            '/images/super.jpg'
+        ])
+    })
+
+    const cacheInmutable = caches.open(CACHE_INMUTABLE_NAME).then( cache => {
+        //console.log(cache)
+
+        //Guardo todos los recursos estáticos de la APP SHELL: inmutable
+        //(necesarios para que nuestra AWP funcione offline)
+        return cache.addAll([
+            '/js/handlebars.min-v4.7.7.js',
+            'https://code.jquery.com/jquery-3.6.0.min.js',
+            'https://code.getmdl.io/1.3.0/material.min.js',
+            'https://code.getmdl.io/1.3.0/material.indigo-pink.min.css'
+        ])
+    })
+
+    //e.waitUntil(cache)
+
+    //https://developer.mozilla.org/es/docs/Web/JavaScript/Reference/Global_Objects/Promise
+    e.waitUntil( Promise.all([cacheStatic,cacheInmutable]) )
 })
 
 self.addEventListener('activate', e => {
-    console.log('sw activate')
-})  
+    console.log('sw activate!')
+
+    const cacheWhiteList = [
+        CACHE_STATIC_NAME,
+        CACHE_INMUTABLE_NAME,
+        CACHE_DYNAMIC_NAME
+    ]
+
+    //borrar todos los caches que no correspondan a la versión actual
+    e.waitUntil(
+        caches.keys().then(keys => {
+            //console.log(keys)
+            return Promise.all(
+                keys.map( cache => {
+                    //console.log(cache)
+                    if(!cacheWhiteList.includes(cache)) {
+                        return caches.delete(cache)
+                    }
+                })
+            )
+        })
+    )
+})
 
 self.addEventListener('fetch', e => {
-    //console.log('sw fetch')
-    let { url, method } = e.request
-    //console.log(url, method)
+    //console.log('sw fetch!!!!')
 
-    //console.log(url.includes('.css'))
+    let {url, method} = e.request
+    console.log(method, url)
 
-    if(false) {
-        if(url.includes('estilos.css')) {
-            let respuesta = new Response(`
-                .w-10 { width: 10%; }
-                .w-20 { width: 20%; }
-                .w-30 { width: 30%; }
-                .w-40 { width: 40%; }
-                .w-50 { width: 50%; }
-                .w-60 { width: 60%; }
-                .w-70 { width: 70%; }
-                .w-80 { width: 80%; }
-                .w-90 { width: 90%; }
-                .w-100 { width: 100%; }
-
-                .ml-item { margin-left: 20px; }
-
-                .mdl-layout { min-width: 350px; }
-
-                .contenedor {
-                    display: flex;
-                    justify-content: space-around;
-                    align-items: center;
-                    padding: 20px;
-                }
-
-                img {
-                    width: 100%;
-                    max-width: 800px;
-                }
-            `, 
-            { 
-                headers : {'Content-Type' : 'text/css'}
+    if(method == 'GET' && !url.includes('mockapi.io')) {
+        const respuesta = caches.match(e.request).then( res => {
+            if(res) {
+                console.log('EXISTE: el recurso existe en el cache', url)
+                return res
+            }
+            console.error('NO EXISTE: el recurso no existe en el cache',url)
+            return fetch(e.request).then( nuevaRespuesta => {
+                caches.open(CACHE_DYNAMIC_NAME).then(cache => {
+                    cache.put(e.request,nuevaRespuesta)
+                })
+                return nuevaRespuesta.clone()
             })
-            e.respondWith(respuesta)
-        } 
-        
-        else if(url.includes('https://code.getmdl.io/1.3.0/material.indigo-pink.min.css')) {
-            let respuesta = fetch('https://code.getmdl.io/1.3.0/material.pink-orange.min.css')
-            e.respondWith(respuesta)
-        } 
-        
-        else if(url.includes('super.jpg')) {
-            console.log('PETICION DE LA IMAGEN')
-        } 
-        
-        else if(url.includes('main.js')) {
-            console.log('Peticion main interceptada')
-        }
-    }
-     else {
-        let respuesta = fetch(url)
+        })
+
         e.respondWith(respuesta)
     }
-
-    //console.log('------------------------------------------')
-
+    else {
+        console.warn('BYPASS', method, url)
+    }
 })

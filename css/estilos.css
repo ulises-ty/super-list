@@ -9,9 +9,13 @@
 .w-90 { width: 90%; }
 .w-100 { width: 100%; }
 
-.ml-item { margin-left: 20px; }
+.ml-item {
+    margin-left: 20px;
+}
 
-.mdl-layout { min-width: 350px; }
+.mdl-layout {
+    min-width: 350px;
+}
 
 .contenedor {
     display: flex;
@@ -23,4 +27,10 @@
 img {
     width: 100%;
     max-width: 800px;
+}
+
+progress {
+    width: 100%;
+    height: 20px;
+    display: none;
 }
