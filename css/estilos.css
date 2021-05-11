@@ -34,3 +34,18 @@ progress {
     height: 20px;
     display: none;
 }
+
+/* --------------------- PUSH -------------------------- */
+pre {
+    white-space: pre-wrap;
+    background-color: #EEEEEE;
+    padding: 16px;
+}
+  
+pre code {
+    word-break: break-word;
+}
+
+.is-invisible {
+   opacity: 0;
+}

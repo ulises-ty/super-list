@@ -71,8 +71,9 @@ const api = (function() {
     /* DELETE ALL */
     async function deleteAllProdWeb() {
 
-        let progress = document.querySelector('progress')
-        progress.style.display = 'block'
+        let progress = $('progress')
+        //console.log(progress)
+        progress.css('display','block')
 
         let porcentaje = 0
 
@@ -80,25 +81,26 @@ const api = (function() {
 
             porcentaje = parseInt((i * 100) / listaProductos.length)
             console.log(porcentaje)
-            progress.value = porcentaje
+            progress.attr('value', porcentaje)
 
             let id = listaProductos[i].id
             try {
                 await deleteProdWeb(id)
                 //await renderLista()
-                await retardo(500)
+                await retardo(250)
             }
             catch(error) {
+                await retardo(1000)
+                i--
                 console.error('Error deleteAllProdWeb', error)
             }
         }
         porcentaje = 100
         console.log(porcentaje)
-        progress.value = porcentaje
+        progress.attr('value', porcentaje)
 
-        setTimeout(() => {
-            progress.style.display = 'none'
-        },2000)
+        await retardo(2000)
+        progress.css('display','none')
     }
 
     //console.log('Librería api instalada!')

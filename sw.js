@@ -1,9 +1,12 @@
-const CACHE_STATIC_NAME = 'static-v04'
-const CACHE_INMUTABLE_NAME = 'inmutable-v04'
-const CACHE_DYNAMIC_NAME = 'dynamic-v04'
+const CACHE_STATIC_NAME = 'static-v05'
+const CACHE_INMUTABLE_NAME = 'inmutable-v05'
+const CACHE_DYNAMIC_NAME = 'dynamic-v05'
 
 self.addEventListener('install', e => {
-    console.log('sw install!')
+    console.log('sw install')
+
+    //skip waiting automático
+    self.skipWaiting()
 
     //const cache = caches.open('cache-1').then( cache => {
     const cacheStatic = caches.open(CACHE_STATIC_NAME).then( cache => {
@@ -67,17 +70,17 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
     //console.log('sw fetch!!!!')
-
+    /*
     let {url, method} = e.request
-    console.log(method, url)
+    //console.log(method, url)
 
     if(method == 'GET' && !url.includes('mockapi.io')) {
         const respuesta = caches.match(e.request).then( res => {
             if(res) {
-                console.log('EXISTE: el recurso existe en el cache', url)
+                //console.log('EXISTE: el recurso existe en el cache', url)
                 return res
             }
-            console.error('NO EXISTE: el recurso no existe en el cache',url)
+            //console.error('NO EXISTE: el recurso no existe en el cache',url)
             return fetch(e.request).then( nuevaRespuesta => {
                 caches.open(CACHE_DYNAMIC_NAME).then(cache => {
                     cache.put(e.request,nuevaRespuesta)
@@ -89,6 +92,33 @@ self.addEventListener('fetch', e => {
         e.respondWith(respuesta)
     }
     else {
-        console.warn('BYPASS', method, url)
+        //console.warn('BYPASS', method, url)
     }
+    */
+})
+
+self.addEventListener('push', e => {
+    console.log('push', e)
+
+    let datos = e.data.text()
+    console.log(datos)
+
+    //https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/showNotification
+    const title = 'Super Lista!'
+    const options = {
+        body: `Mensajes: ${datos}`,
+        icon: 'images/icons/icon-72x72.png',
+        badge: 'https://licores.ninja/wp-content/uploads/2018/04/cropped-ninja-n-02.png'
+    }
+    
+    e.waitUntil( self.registration.showNotification(title, options) )
+})
+
+
+self.addEventListener('notificationclick', e => {
+    console.log('Click en notificación recibido', e)
+
+    e.notification.close()
+
+    e.waitUntil(clients.openWindow('https://www.instagram.com'))
 })
